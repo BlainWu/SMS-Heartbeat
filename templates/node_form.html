@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3 class="mb-3">
+  {% if mode == "new" %}新建节点{% else %}编辑节点{% endif %}
+</h3>
+
+{% if err %}
+  <div class="alert alert-danger">{{ err }}</div>
+{% endif %}
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form method="post" action="{% if mode == 'new' %}/ui/nodes/new{% else %}/ui/nodes/{{node.id}}/edit{% endif %}">
+      {% if mode == "new" %}
+      <div class="mb-3">
+        <label class="form-label">node_key（唯一标识）</label>
+        <input class="form-control" name="node_key" placeholder="例如 GW_A_01" required />
+        <div class="form-text">短信网关心跳上报会用这个字段区分谁是谁。</div>
+      </div>
+      {% else %}
+      <div class="mb-3">
+        <label class="form-label">node_key</label>
+        <input class="form-control" value="{{ node.node_key }}" disabled />
+      </div>
+      {% endif %}
+
+      <div class="mb-3">
+        <label class="form-label">钉钉 Webhook</label>
+        <input class="form-control" name="ding_webhook"
+               value="{{ node.ding_webhook if node else '' }}"
+               placeholder="https://oapi.dingtalk.com/robot/send?access_token=xxx"
+               required />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">钉钉关键词</label>
+        <input class="form-control" name="ding_keyword"
+               value="{{ node.ding_keyword if node else '' }}"
+               placeholder="例如 监控报警"
+               required />
+        <div class="form-text">
+          关键词模式要求消息必须包含至少一个关键词才能发送成功。[1](https://open.dingtalk.com/document/robots/customize-robot-security-settings)
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label class="form-label">心跳间隔（分钟）</label>
+          <input class="form-control" type="number" min="1" name="interval_min"
+                 value="{{ node.interval_min if node else 15 }}" required />
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">告警冷却（分钟）</label>
+          <input class="form-control" type="number" min="1" name="alert_cooldown_min"
+                 value="{{ node.alert_cooldown_min if node else 30 }}" required />
+        </div>
+        <div class="col-md-4 mb-3 d-flex align-items-end">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="enabled"
+                   {% if node and node.enabled %}checked{% endif %}
+                   {% if mode == "new" %}checked{% endif %}>
+            <label class="form-check-label">启用监控</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">保存</button>
+        <a class="btn btn-outline-secondary" href="/ui/nodes">返回</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

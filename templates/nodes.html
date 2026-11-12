@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- 表头不换行的小样式（只影响本页） -->
+<style>
+  .table-nowrap th {
+    white-space: nowrap;
+  }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="m-0">监控节点</h3>
+  <a class="btn btn-success" href="/ui/nodes/new">+ 新建节点</a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="table-responsive">
+      <!-- ✅ 关键：table-nowrap -->
+      <table class="table align-middle table-nowrap">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>node_key</th>
+            <th>状态</th>
+            <th>启用</th>
+            <th>心跳间隔</th>
+            <th>最后心跳</th>
+            <th>关键词</th>
+            <th>告警冷却</th>
+            <th style="min-width: 420px;">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for n in nodes %}
+          <tr>
+            <td>{{ n.id }}</td>
+            <td><code>{{ n.node_key }}</code></td>
+            <td>
+              {% if n.online %}
+                <span class="badge text-bg-success">在线</span>
+                <div class="text-muted small">约 {{ n.ago_min }} 分钟前</div>
+              {% else %}
+                <span class="badge text-bg-danger">离线/超时</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if n.enabled %}
+                <span class="badge text-bg-primary">启用</span>
+              {% else %}
+                <span class="badge text-bg-secondary">停用</span>
+              {% endif %}
+            </td>
+            <td>{{ n.interval_min }}</td>
+            <td>{{ n.last_seen_at | cst }}</td>
+            <td>{{ n.ding_keyword }}</td>
+            <td>{{ n.alert_cooldown_min }}</td>
+            <td>
+              <div class="d-flex gap-2 flex-wrap">
+
+                <!-- 编辑 -->
+                <a class="btn btn-sm btn-outline-primary"
+                   href="/ui/nodes/{{ n.id }}/edit">编辑</a>
+
+                <!-- 启停 -->
+                <form method="post" action="/ui/nodes/{{ n.id }}/toggle">
+                  <button class="btn btn-sm btn-outline-warning" type="submit">
+                    {% if n.enabled %}停用{% else %}启用{% endif %}
+                  </button>
+                </form>
+
+                <!-- ✅ 心跳历史 -->
+                <a class="btn btn-sm btn-outline-info"
+                   href="/ui/nodes/{{ n.id }}/history">历史</a>
+
+                <!-- 测试钉钉 -->
+                <form method="post" action="/ui/nodes/{{ n.id }}/test_ding">
+                  <button class="btn btn-sm btn-outline-success" type="submit">
+                    测试钉钉
+                  </button>
+                </form>
+
+                <!-- 删除 -->
+                <form method="post"
+                      action="/ui/nodes/{{ n.id }}/delete"
+                      onsubmit="return confirm('确定删除该节点？');">
+                  <button class="btn btn-sm btn-outline-danger" type="submit">
+                    删除
+                  </button>
+                </form>
+
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-info mt-3 mb-0">
+      心跳接口：
+      <code>POST /api/heartbeat?token=...</code>
+      （body 里带 <code>node_key</code>）
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,22 @@
+[Unit]
+Description=Heartbeat Monitor (FastAPI + APScheduler)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/heartbeat_monitor
+Environment="PYTHONUNBUFFERED=1"
+# 如果你希望 systemd 直接加载 .env：
+EnvironmentFile=/opt/heartbeat_monitor/.env
+
+ExecStart=/opt/heartbeat_monitor/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=3
+
+# 日志（journald）
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

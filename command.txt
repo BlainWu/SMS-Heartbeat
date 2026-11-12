@@ -1,0 +1,14 @@
+
+%更新python
+apt update
+apt install -y python3-venv python3-pip
+
+%复制虚拟环境
+cd /opt/heartbeat_monitor
+python3 -m venv venv
+
+%安装依赖
+./venv/bin/python3 -m pip install -r requirements.txt
+
+%手动启动
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
